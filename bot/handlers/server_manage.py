@@ -1,13 +1,12 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.fsm.context import FSMContext
 from logic.storage import load_users, delete_server
 
 router = Router()
 
 @router.message(F.text == "📄 Мои серверы")
-async def list_servers(message: Message, state: FSMContext):
-    await state.clear()
+async def list_servers(message: Message):
+
     user_id = str(message.from_user.id)
     users = load_users()
 
@@ -26,8 +25,8 @@ async def list_servers(message: Message, state: FSMContext):
 
 
 @router.message(F.text == "❌ Удалить сервер")
-async def ask_delete_server(message: Message, state: FSMContext):
-    await state.clear()
+async def ask_delete_server(message: Message):
+
     user_id = str(message.from_user.id)
     users = load_users()
 

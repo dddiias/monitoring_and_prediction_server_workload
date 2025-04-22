@@ -5,15 +5,13 @@ from config.config import SERVER_IP
 from logic.metrics import get_metrics_from_server
 from utils.formatters import format_metrics
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.fsm.context import FSMContext
+
 
 router = Router()
 
 
 @router.message(F.text == "📊 Метрики")
-async def choose_server(message: Message, state: FSMContext):
-    
-    await state.clear()
+async def choose_server(message: Message):
 
     user_id = str(message.from_user.id)
     users = load_users()
