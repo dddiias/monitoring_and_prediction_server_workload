@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  fastapi:
+    build: ./server
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    restart: always
+
+  telegram_bot:
+    build: ./bot
+    env_file:
+      - ./bot/.env
+    volumes:
+      - ./data:/app/data
+    restart: always
+
+volumes:
+  data:
