@@ -1,13 +1,12 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
-from aiogram.fsm.context import FSMContext
+
 from keyboards.inline import get_help_menu, get_main_inline_menu
 
 router = Router()
 
 @router.message(F.text == "❓ Помощь")
-async def help_entry(message: Message, state: FSMContext):
-    await state.clear()
+async def help_entry(message: Message):
     await message.answer(
         "📖 <b>Чем могу помочь?</b>\n\nВыберите интересующий раздел ниже:",
         reply_markup=get_help_menu(),

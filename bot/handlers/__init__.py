@@ -13,7 +13,7 @@ routers = [
     settings_router,
     predict_router,
     help_router,
+    server_manage_router,
     fsm_cpu_limit_router,
     connect_fsm_router,
-    server_manage_router,
 ]
