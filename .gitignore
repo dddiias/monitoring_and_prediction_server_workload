@@ -1,2 +1,3 @@
-/.venv
 /bot/.env
+/data/user_data.json
+/data/user_tokens.json
