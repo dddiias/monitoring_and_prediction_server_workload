@@ -1,8 +1,7 @@
 # 🛰️ MPS – Monitoring & Prediction System
 System for monitoring and predicting server workload based on time series analysis (telegram-bot)
 
-[![Docker](https://img.shields.io/badge/ready-for-docker-blue?logo=docker)](https://docs.docker.com/)
-[![License](https://img.shields.io/github/license/your-org/monitoring_and_prediction_server_workload)](LICENSE)
+[![Docker Ready](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://docs.docker.com/)
 [![Made with ❤️](https://img.shields.io/badge/made%20with-%E2%9D%A4-red)](#)
 
 A **plug-and-play DevOps toolkit** that
@@ -29,29 +28,31 @@ A **plug-and-play DevOps toolkit** that
 ---
 
 ## 🏗️ Architecture
+
 ```mermaid
 graph TD
-    subgraph Clients
-        U[User • Telegram]
-    end
-    subgraph Bot
-        TB[Telegram Bot]
-        S[Scheduler & Alerts]
-    end
-    subgraph Backend
-        A(FastAPI)
-        I[(InfluxDB)]
-        M[[LSTM Service]]
-    end
-    subgraph Servers
-        T1>Telegraf Agent]
-        T2>Telegraf Agent]
-    end
-    U --> TB
-    TB --REST--> A
+    %% Clients
+    U["User via Telegram"]
+
+    %% Bot layer
+    TB["Telegram Bot"]
+    S["Scheduler & Alerts"]
+
+    %% Backend layer
+    A["FastAPI"]
+    I[("InfluxDB")]
+    M["LSTM Service"]
+
+    %% Agents
+    T1["Telegraf Agent"]
+    T2["Telegraf Agent"]
+
+    %% Flows
+    U -->|" /start, /connect "| TB
+    TB -->|" REST "| A
     A --> I
-    TB ..> I
+    TB -.->|" query "| I
+    S -.-> TB
     A --> M
     T1 --> A
     T2 --> A
-    S -.-> TB
