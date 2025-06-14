@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from logic.storage import load_users
 from logic.metrics import get_metrics_from_server
-from logic.history import analyze_metrics
+from logic.influx_metrics import analyze_metrics
 from utils.formatters import format_metrics
 
 router = Router()
@@ -29,6 +29,21 @@ async def choose_server(message: Message):
     )
     await message.answer("Выберите сервер для просмотра метрик:", reply_markup=kb)
 
+@router.callback_query(F.data == "metrics")
+async def show_metrics_menu(callback: CallbackQuery):
+    await callback.answer()
+    user_id = str(callback.from_user.id)
+    servers = load_users().get(user_id, {}).get("servers", [])
+    if not servers:
+        await callback.message.answer("❌ У вас нет подключённых серверов.")
+        return
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text=f"{srv['server_name']} ({srv['os']})",
+            callback_data=f"metrics:{srv['token']}"
+        )] for srv in servers
+    ])
+    await callback.message.answer("Выберите сервер для просмотра метрик:", reply_markup=kb)
 
 @router.callback_query(F.data.startswith("metrics:"))
 async def send_metrics(callback: CallbackQuery):
@@ -41,9 +56,13 @@ async def send_metrics(callback: CallbackQuery):
         return
 
     data = get_metrics_from_server(token)
+    if not data:
+        await callback.message.edit_text("❌ На данный момент нет данных метрик для этого сервера.")
+        return
     stats = analyze_metrics(token)
     text = format_metrics(data, stats)
 
+    # Предупреждения при высоких средних нагрузках
     warnings = []
     if stats["CPU"]["User"]["avg"] > 90:
         warnings.append("⚠ CPU в среднем выше 90%")

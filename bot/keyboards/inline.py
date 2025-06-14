@@ -3,7 +3,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 def get_main_inline_menu():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="📍 Подключить сервер", callback_data="get_config"),
-        InlineKeyboardButton(text="📊 Показать метрики", callback_data="metrics"),]
+        InlineKeyboardButton(text="📊 Показать метрики", callback_data="metrics")],
         [InlineKeyboardButton(text="🔮 Прогноз", callback_data="predict"),
          InlineKeyboardButton(text="⚙ Настройки", callback_data="settings")]
     ])

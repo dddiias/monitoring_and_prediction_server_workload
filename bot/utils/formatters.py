@@ -9,14 +9,15 @@ def format_metrics(current: dict, history: dict) -> str:
 
     text = ""
 
-    if "CPU" in current:
+    if "CPU" in current and current["CPU"]:
         cpu = current["CPU"]
         hist_cpu = history.get("CPU", {})
         user = cpu.get("User", 0)
         system = cpu.get("System", 0)
         total_active = user + system
         load1 = cpu.get("Load1", 0)
-        text += f"📊 <b>CPU:</b> {fmt_percent(total_active)} (Load 1m: {load1:.2f})\n"
+        circle = get_emoji(total_active, "CPU")
+        text += f"📊 <b>CPU:</b> {fmt_percent(total_active)} {circle} (Load 1m: {load1:.2f})\n"
         text += f"├ User: {fmt_percent(user)}{fmt_stat(hist_cpu.get('User'), '%')}\n"
         text += f"├ System: {fmt_percent(system)}{fmt_stat(hist_cpu.get('System'), '%')}\n"
         if "Idle" in cpu:
@@ -27,21 +28,25 @@ def format_metrics(current: dict, history: dict) -> str:
         hist_mem = history.get("Memory", {})
         used = mem.get("Used_bytes", 0)
         available = mem.get("Available_bytes", 0)
-        text += f"\n💾 <b>RAM:</b> {fmt_gb(used)} used / {fmt_gb(available)} available\n"
+        total = mem.get("Total_bytes", used + available)
+        used_percent = (used / total * 100) if total > 0 else 0
+        circle_mem = get_emoji(used_percent, "Memory")
+        text += f"\n💾 <b>RAM:</b> {fmt_gb(used)} used / {fmt_gb(total)} total {circle_mem}\n"
         if "Used" in hist_mem:
             text += f"├ Used avg: {hist_mem['Used']['avg']:.1f}%, max: {hist_mem['Used']['max']:.1f}%\n"
 
-    if "Disk" in current:
+    if "Disk" in current and current["Disk"]:
         disk = current["Disk"]
         hist_disk = history.get("Disk", {})
         used = disk.get("Used_bytes", 0)
         total = disk.get("Total_bytes", 1)
-        text += f"\n📀 <b>Disk:</b> {fmt_gb(used)} used / {fmt_gb(total)} total (/)\n"
+        used_percent = (used / total * 100) if total > 0 else 0
+        circle_disk = get_emoji(used_percent, "Disk")
+        text += f"\n📀 <b>Disk:</b> {fmt_gb(used)} used / {fmt_gb(total)} total (/) {circle_disk}\n"
         if "Used" in hist_disk:
             text += f"├ Used avg: {hist_disk['Used']['avg']:.1f}%, max: {hist_disk['Used']['max']:.1f}%\n"
         if "Read_bytes" in disk and "Write_bytes" in disk:
             read = disk["Read_bytes"]
-
             write = disk["Write_bytes"]
             text += f"└ I/O: ⬇ {fmt_kbps(read)} | ⬆ {fmt_kbps(write)}\n"
 
@@ -59,12 +64,19 @@ def format_metrics(current: dict, history: dict) -> str:
     return text.strip()
 
 
-
-
-def get_emoji(value: float) -> str:
-    if value < 60:
-        return "🟢"
-    elif value < 85:
-        return "🟠"
+def get_emoji(value: float, metric: str = None) -> str:
+    """Return a colored circle emoji indicating low (green), medium (orange), or high (red) load."""
+    if metric == "Disk":
+        if value < 70:
+            return "🟢"
+        elif value < 90:
+            return "🟠"
+        else:
+            return "🔴"
     else:
-        return "🔴"
+        if value < 60:
+            return "🟢"
+        elif value < 80:
+            return "🟠"
+        else:
+            return "🔴"

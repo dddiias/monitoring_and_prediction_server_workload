@@ -1,16 +1,5 @@
-import json
-import os
-from config.config import METRICS_FILE
+from logic.influx_metrics import get_metrics_history, analyze_metrics
 
-
-def load_all_metrics():
-    if not os.path.exists(METRICS_FILE):
-        return {}
-    with open(METRICS_FILE, "r", encoding="utf-8") as f:
-        try:
-            return json.load(f)
-        except json.JSONDecodeError:
-            return {}
 
 
 def analyze_metrics(token: str) -> dict:
@@ -44,11 +33,13 @@ def analyze_metrics(token: str) -> dict:
 
     for section in metrics_result:
         for metric_name, values in metrics_result[section].items():
-            if values:
-                avg = round(sum(values) / len(values), 2)
-                mx = round(max(values), 2)
-            else:
-                avg = mx = 0
-            metrics_result[section][metric_name] = {"avg": avg, "max": mx}
+            if isinstance(values, list):
+                avg = round(sum(values) / len(values), 2) if values else 0
+                mx = round(max(values), 2) if values else 0
+                metrics_result[section][metric_name] = {
+                    "avg": avg,
+                    "max": mx,
+                    "values": values
+                }
 
     return metrics_result

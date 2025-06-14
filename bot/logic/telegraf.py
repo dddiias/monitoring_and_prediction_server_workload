@@ -1,5 +1,7 @@
 def generate_telegraf_config(token: str, server_ip: str) -> str:
-    return f"""
+    return f"""[global_tags]
+  token = "{token}"
+
 [agent]
   interval = "10s"
   round_interval = true
@@ -29,11 +31,22 @@ def generate_telegraf_config(token: str, server_ip: str) -> str:
 
 [[inputs.kernel]]
 
-[[outputs.http]]
-  url = "http://{server_ip}:8000/telegraf"
-  method = "POST"
-  data_format = "json"
+[[processors.converter]]
+  [processors.converter.fields]
+    float = [
+      "load1", 
+      "load5", 
+      "load15", 
+      "inodes_used_percent", 
+      "io_util", 
+      "usage_steal", 
+      "usage_guest_nice",
+      "n_cpus"
+    ]
 
-  [outputs.http.headers]
-    token = "{token}"
+[[outputs.influxdb_v2]]
+  urls = ["https://us-east-1-1.aws.cloud2.influxdata.com"]
+  token = "zpBn3XHjYBTSI4ssitgbV6Lujsi18qtY6ydiFhbvfZfdZ5_iQG6hmmHVJTHgQ-IJ5oD0BDgrnTJ-aHAOZdvzlg=="
+  organization = "dev team"
+  bucket = "server_metrics"
 """
